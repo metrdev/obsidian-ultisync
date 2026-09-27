@@ -415,6 +415,24 @@
   background: var(--background-modifier-hover);
 }
 
+/* A native select otherwise sizes its closed box to fit its longest option,
+   and a saved token's label is arbitrary user text with no length limit of
+   its own. Clamping it here keeps a long one from forcing the whole settings
+   page into horizontal scroll; the open dropdown list is unaffected. */
+.ultisync-dropdown {
+  max-width: 100%;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* max-width alone does nothing while the flex column around the dropdown is
+   still sized to fit it: a flex item's default min-width is its content
+   size, not 0, so the column has to be told it may shrink before the select
+   inside it gets the chance to. */
+.ultisync-token-row .setting-item-control {
+  min-width: 0;
+}
+
 /* The credential block reads as one unit, Save included, because none of it
    means anything on its own. */
 .ultisync-box {
@@ -534,7 +552,6 @@
 .ultisync-action.ultisync-working {
   --ultisync-fill: 0%;
   cursor: progress;
-  background-image: linear-gradient(var(--interactive-accent), var(--interactive-accent));
   background-image: linear-gradient(
     color-mix(in srgb, var(--interactive-accent) 55%, transparent),
     color-mix(in srgb, var(--interactive-accent) 55%, transparent)

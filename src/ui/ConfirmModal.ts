@@ -45,9 +45,7 @@ export class ConfirmModal extends Modal {
 		new Setting(contentEl)
 			.addButton((button) => {
 				button.setButtonText(options.confirmLabel).onClick(() => this.answer(true));
-				// setDestructive would be the modern spelling, but it needs 1.13
-				// and this plugin still supports 1.7.2.
-				if (options.destructive ?? true) button.setWarning();
+				if (options.destructive ?? true) button.setDestructive();
 				else button.setCta();
 			})
 			.addButton((button) => button.setButtonText('Cancel').onClick(() => this.answer(false)));

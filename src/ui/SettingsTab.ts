@@ -70,10 +70,9 @@ const ACTION_LABEL: Record<Action, { idle: string; busy: string }> = {
 const BUTTON_TICK_MS = 100;
 
 /**
- * One row of the tab, described once and rendered by either path: Obsidian
- * 1.13 renders from `getSettingDefinitions()`, older versions from `display()`.
+ * One row of the tab, described once and rendered from `getSettingDefinitions()`.
  * Keeping the name and description here rather than inside `build` is what
- * lets 1.13 index the row for settings search without the two paths drifting.
+ * lets Obsidian index the row for settings search.
  */
 interface RowSpec {
 	name: string;
@@ -157,11 +156,7 @@ export class SettingsTab extends PluginSettingTab {
 	// Entry points
 	// ---------------------------------------------------------------------
 
-	/**
-	 * Obsidian 1.13 and later render the tab from these and index them for
-	 * settings search. Returning a non-empty array means display() is never
-	 * called on those versions.
-	 */
+	/** Renders the tab and indexes its rows for settings search. */
 	getSettingDefinitions(): SettingDefinitionItem[] {
 		this.beginRender();
 
@@ -202,55 +197,14 @@ export class SettingsTab extends PluginSettingTab {
 		return definitions;
 	}
 
-	/**
-	 * The pre-1.13 fallback. Obsidian 1.13 and later ignore it in favour of
-	 * getSettingDefinitions(), so every change has to be made to the shared
-	 * specs rather than here.
-	 */
-	display(): void {
-		this.renderImperative();
-	}
-
 	/** Repaints after something outside the tab changed the state it shows. */
 	refresh(): void {
 		this.redraw();
 	}
 
-	private renderImperative(): void {
-		const { containerEl } = this;
-		containerEl.empty();
-		this.beginRender();
-
-		this.renderHeader(containerEl);
-		this.renderIntro(containerEl);
-
-		for (const section of this.sections()) {
-			const sectionEl = containerEl.createDiv();
-			if (section.cls) sectionEl.addClass(section.cls);
-			sectionEl.toggleClass('ultisync-dimmed', Boolean(section.dimmed));
-			if (section.heading) {
-				new Setting(sectionEl).setName(section.heading).setHeading();
-			}
-			for (const row of section.rows) {
-				const setting = new Setting(sectionEl).setName(row.name);
-				if (row.desc) setting.setDesc(row.desc);
-				row.build(setting);
-			}
-		}
-	}
-
-	/**
-	 * Redraws through whichever path this Obsidian actually renders with.
-	 * update() re-runs getSettingDefinitions and repaints, and exists only from
-	 * 1.13; before that the tab is rebuilt imperatively.
-	 */
+	/** Re-runs getSettingDefinitions() and repaints from the result. */
 	private redraw(): void {
-		// update() arrived in 1.13 alongside the declarative API, and this
-		// plugin still supports 1.7.2, so it is reached only when the running
-		// version actually has it. Older versions rebuild imperatively.
-		const update: unknown = Reflect.get(this, 'update');
-		if (typeof update === 'function') (update as () => void).call(this);
-		else this.renderImperative();
+		this.update();
 	}
 
 	/** State both paths reset before they lay the tab out again. */
@@ -522,7 +476,7 @@ export class SettingsTab extends PluginSettingTab {
 				build: (setting) =>
 					setting.addText((text) =>
 						text
-							.setPlaceholder('Your GitHub Username')
+							.setPlaceholder('Your GitHub username')
 							.setValue(this.draft.githubOwner)
 							.onChange((value) => {
 								this.draft.githubOwner = value.trim();
@@ -537,7 +491,7 @@ export class SettingsTab extends PluginSettingTab {
 				build: (setting) =>
 					setting.addText((text) =>
 						text
-							.setPlaceholder('my-obsidian-vault')
+							.setPlaceholder('My-Obsidian-vault')
 							.setValue(this.draft.githubRepo)
 							.onChange((value) => {
 								this.draft.githubRepo = value.trim();
@@ -617,15 +571,23 @@ export class SettingsTab extends PluginSettingTab {
 					`${saved.length} token${saved.length === 1 ? '' : 's'} saved in this vault from earlier connection checks. ` +
 					'Choose one to use it, or choose "Enter a new token" to type one below. With a saved token chosen, the field below is not used.',
 				aliases: ['saved pat', 'previous token', 'reinstall'],
-				build: (setting) =>
-					setting.addDropdown((dropdown) => {
+				build: (setting) => {
+					setting.settingEl.addClass('ultisync-token-row');
+					return setting.addDropdown((dropdown) => {
 						for (const entry of saved) {
 							dropdown.addOption(entry.id, this.describeSaved(entry));
 						}
 						dropdown.addOption(NEW_TOKEN, 'Enter a new token');
 						dropdown.setValue(this.tokenSource);
 						dropdown.onChange((value) => this.selectTokenSource(value));
-					}),
+						// A saved label is whatever the user typed for "GitHub
+						// repository" at the time, with no length of its own to
+						// trust. Left unconstrained, a long one sizes the closed
+						// select box to fit it, which is what was dragging the
+						// whole settings page into horizontal scroll.
+						dropdown.selectEl.addClass('ultisync-dropdown');
+					});
+				},
 			},
 		];
 	}
@@ -821,7 +783,7 @@ export class SettingsTab extends PluginSettingTab {
 					setting.addButton((button) => {
 						this.actionButtons.push = button;
 						button
-							.setWarning()
+							.setDestructive()
 							.setButtonText(ACTION_LABEL.push.idle)
 							.onClick(() => {
 								void this.runAction('push', () => this.host.pushNow());
@@ -838,7 +800,7 @@ export class SettingsTab extends PluginSettingTab {
 					setting.addButton((button) => {
 						this.actionButtons.reset = button;
 						button
-							.setWarning()
+							.setDestructive()
 							.setButtonText(ACTION_LABEL.reset.idle)
 							.onClick(() => {
 								void this.runAction('reset', () => this.host.resetSyncState());

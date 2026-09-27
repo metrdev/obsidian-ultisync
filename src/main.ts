@@ -552,7 +552,7 @@ export default class UltiSyncPlugin extends Plugin {
 	): Promise<void> {
 		if (outcome === 'cancel') {
 			if (enableSync) {
-				new Notice('UltiSync: left switched off. Turn Sync on to run the check again.');
+				new Notice('UltiSync: left switched off. Turn sync on to run the check again.');
 				await this.disableSync();
 			} else {
 				new Notice('UltiSync: cancelled. Nothing was changed.');
@@ -578,7 +578,7 @@ export default class UltiSyncPlugin extends Plugin {
 		// no commit until a file is pushed, and there is no file to push.
 		if (this.syncManager.needsStartingPoint() && result.relation === 'remote-empty') {
 			new Notice(
-				'UltiSync: both this vault and the repository are empty, so there is nothing to link yet. Add a note, then press Push or turn Sync off and on.',
+				'UltiSync: both this vault and the repository are empty, so there is nothing to link yet. Add a note, then press push or turn sync off and on.',
 				12000,
 			);
 		}
