@@ -30,6 +30,16 @@ export const DEEP_VERIFY_INTERVAL_MS = 5 * 60 * 1000;
 export const PROGRESS_TICK_MS = 100;
 export const NEW_FILE_SETTLE_MS = 60000;
 
+/**
+ * How many never-pulled files one verify pass fetches at most. A vault whose
+ * "Upload this vault" start recorded thousands of files without downloading
+ * any of them would otherwise try to fetch every one of them in a single
+ * pass — one GitHub API call per file — which is enough on its own to burn
+ * through the hourly rate limit. Capping it here spreads a large backlog
+ * across several passes instead of exhausting the quota in one.
+ */
+export const MAX_RECOVER_PER_VERIFY = 200;
+
 /** sha1 of an empty blob, and of an empty tree. Both are fixed Git constants. */
 export const EMPTY_BLOB_SHA = 'e69de29bb2d1d6434b8b29ae775ad8c2e48c5391';
 export const EMPTY_TREE_SHA = '4b825dc642cb6eb9a060e54bf8d69288fbee4904';

@@ -15,6 +15,7 @@ import {
 	EMPTY_BLOB_SHA,
 	UltiSyncSettings,
 	LARGE_FILE_WARN_BYTES,
+	MAX_RECOVER_PER_VERIFY,
 	POLL_HOLD_AFTER_PUSH_MS,
 	PROGRESS_MIN_BYTES,
 	PROGRESS_MIN_FILES,
@@ -152,6 +153,7 @@ export class SyncManager {
 	// the commit pointer.
 	private lastVerifyAt = 0;
 	private lastDeepVerifyAt = 0;
+	private lastDriftCheckAt = 0;
 
 	// Focus and visibility both announce a return to the app, usually in the
 	// same instant. One check is enough.
@@ -1703,9 +1705,15 @@ export class SyncManager {
 		const missing = this.pathsNeverPulled();
 		if (!missing.length) return 0;
 
+		const batch = missing.slice(0, MAX_RECOVER_PER_VERIFY);
 		this.debug(`verify found ${missing.length} recorded file(s) that never arrived`);
-		this.setStatus('pulling', `Fetching ${missing.length} file(s) that never arrived...`);
-		return this.repairNeverPulled(missing);
+		this.setStatus(
+			'pulling',
+			missing.length > batch.length
+				? `Fetching ${batch.length} of ${missing.length} file(s) that never arrived...`
+				: `Fetching ${batch.length} file(s) that never arrived...`,
+		);
+		return this.repairNeverPulled(batch);
 	}
 
 	/**
@@ -1767,8 +1775,14 @@ export class SyncManager {
 
 		const missing = this.pathsNeverPulled();
 		if (missing.length) {
-			this.setStatus('pulling', `Fetching ${missing.length} file(s) that never arrived...`);
-			await this.repairNeverPulled(missing);
+			const batch = missing.slice(0, MAX_RECOVER_PER_VERIFY);
+			this.setStatus(
+				'pulling',
+				missing.length > batch.length
+					? `Fetching ${batch.length} of ${missing.length} file(s) that never arrived...`
+					: `Fetching ${batch.length} file(s) that never arrived...`,
+			);
+			await this.repairNeverPulled(batch);
 		}
 
 		const suspect = this.sizeMismatches(remote);
@@ -1791,6 +1805,35 @@ export class SyncManager {
 	private async verifyIfDue(): Promise<void> {
 		if (Date.now() - this.lastVerifyAt < VERIFY_INTERVAL_MS) return;
 		await this.verifyNow();
+	}
+
+	/**
+	 * Vault events cover edits made through Obsidian. A file changed by
+	 * anything else - another program, a second git checkout, a sync client
+	 * writing straight to disk - fires none of them, and while the commit
+	 * pointer agrees with the remote nothing else would ever re-read the
+	 * vault to notice it. This rescans on the same schedule as verify, using
+	 * the same detector the push path already trusts: cheap when nothing
+	 * moved, since only a changed mtime or size costs a read.
+	 */
+	private async detectLocalDriftIfDue(): Promise<void> {
+		if (Date.now() - this.lastDriftCheckAt < VERIFY_INTERVAL_MS) return;
+		this.lastDriftCheckAt = Date.now();
+
+		const detector = new ChangeDetector(this.vault, this.settings);
+		const local = await detector.detectLocalChanges(
+			this.state,
+			this.settings.pushExtensions,
+			this.userNamed,
+		);
+		if (local.modifiedOrCreated.size || local.deleted.size) {
+			this.debug(
+				`drift-scan found modifiedOrCreated=[${[...local.modifiedOrCreated].join(
+					', ',
+				)}] deleted=[${[...local.deleted].join(', ')}]`,
+			);
+			this.markDirty();
+		}
 	}
 
 	/**
@@ -1842,9 +1885,12 @@ export class SyncManager {
 			} else if (this.dirty && !this.pushTimer) {
 				await this.pushNow();
 			} else {
-				// The commit pointer says there is nothing to do. That is exactly
-				// when the vault has to be asked whether it agrees.
-				await this.verifyIfDue();
+				await this.detectLocalDriftIfDue();
+				if (!this.dirty) {
+					// The commit pointer says there is nothing to do. That is exactly
+					// when the vault has to be asked whether it agrees.
+					await this.verifyIfDue();
+				}
 			}
 		} catch (error) {
 			this.handleError(error);
