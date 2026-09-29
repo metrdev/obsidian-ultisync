@@ -425,12 +425,19 @@
   text-overflow: ellipsis;
 }
 
-/* max-width alone does nothing while the flex column around the dropdown is
-   still sized to fit it: a flex item's default min-width is its content
-   size, not 0, so the column has to be told it may shrink before the select
-   inside it gets the chance to. */
+/* This row's description runs two full sentences, unlike the single-line
+   fields around it in the same box. Left beside it in the normal flex row,
+   the dropdown was squeezed into whatever the paragraph didn't need, which
+   at typical widths left it colliding with the wrapped text rather than
+   sitting cleanly next to it. Stacking the control under the description
+   gives it the row's full width instead of a leftover sliver. */
+.ultisync-token-row {
+  display: block;
+}
+
 .ultisync-token-row .setting-item-control {
-  min-width: 0;
+  margin-top: 0.6em;
+  justify-content: flex-start;
 }
 
 /* The credential block reads as one unit, Save included, because none of it
