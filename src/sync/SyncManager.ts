@@ -423,6 +423,22 @@ export class SyncManager {
 		return this.settings.syncEnabled;
 	}
 
+	/**
+	 * A modification inside a self-write grace period. It is usually this
+	 * plugin's own write, but a user edit made in the same moment looks the
+	 * same, so the file is read again on the next poll instead of trusting the
+	 * grace period. Marking the vault dirty here would follow every pull with
+	 * a push that has nothing to send.
+	 */
+	recheckSoon(path: string): void {
+		const tracked = this.state.trackedFiles[normalizePath(path)];
+		if (tracked) {
+			delete tracked.mtime;
+			delete tracked.size;
+		}
+		this.lastDriftCheckAt = 0;
+	}
+
 	markDirty(path?: string): void {
 		if (!this.syncEnabled) return;
 		const tracked = path ? this.state.trackedFiles[normalizePath(path)] : undefined;
@@ -1533,18 +1549,23 @@ export class SyncManager {
 		conflicts: ConflictRecord[],
 		remote: RemoteSnapshot,
 	): Promise<void> {
+		// Every push finds an open conflict again. Only a new one, or one whose
+		// remote version moved, is news; announcing the rest would repeat the
+		// notice after every edit until the user resolves it.
+		const recorded: ConflictRecord[] = [];
 		for (const conflict of conflicts) {
 			if (this.state.conflicts[conflict.path]?.remoteSha === conflict.remoteSha) continue;
 			conflict.conflictCopyPath = await this.createConflictCopy(conflict.path, remote);
 			this.state.conflicts[conflict.path] = conflict;
+			recorded.push(conflict);
 		}
 
-		if (conflicts.length) {
+		if (recorded.length) {
 			await this.stateStore.save(this.state);
-			for (const conflict of conflicts) {
+			for (const conflict of recorded) {
 				this.record('conflict', `Conflict in ${basename(conflict.path)}`);
 			}
-			new Notice(`${conflicts.length} synchronization conflict(s) detected.`);
+			new Notice(`${recorded.length} synchronization conflict(s) detected.`);
 		}
 	}
 
@@ -1580,8 +1601,13 @@ export class SyncManager {
 
 	async keepLocal(path: string): Promise<void> {
 		const conflict = this.state.conflicts[path];
-		if (!conflict || this.running) return;
+		if (!conflict) return;
+		if (this.running) {
+			new Notice('UltiSync is busy. Try again when the current operation finishes.');
+			return;
+		}
 		this.running = true;
+		this.setStatus('pushing', 'Pushing...');
 		try {
 			const result = await this.executePush('manual', {
 				chosenLocalPaths: new Map([[path, conflict.remoteSha]]),
@@ -1592,7 +1618,17 @@ export class SyncManager {
 			if (result.writtenShas[path] || alreadyIdentical) {
 				delete this.state.conflicts[path];
 				await this.stateStore.save(this.state);
+				// The push reported its status while this conflict was still open.
+				this.setStatus(
+					Object.keys(this.state.conflicts).length ? 'conflict' : 'synced',
+					`Kept local version of ${path}.`,
+				);
+				this.refreshUI();
+			} else {
+				new Notice('UltiSync: could not send the local version. Conflict left unresolved.');
 			}
+		} catch (error) {
+			this.handleError(error);
 		} finally {
 			this.running = false;
 			this.clearProgress();
@@ -1601,7 +1637,10 @@ export class SyncManager {
 	}
 
 	async keepRemote(path: string): Promise<void> {
-		if (this.running) return;
+		if (this.running) {
+			new Notice('UltiSync is busy. Try again when the current operation finishes.');
+			return;
+		}
 		this.running = true;
 		try {
 			const conflict = this.state.conflicts[path];
@@ -1664,6 +1703,8 @@ export class SyncManager {
 				`Kept remote version of ${path}.`,
 			);
 			this.refreshUI();
+		} catch (error) {
+			this.handleError(error);
 		} finally {
 			this.running = false;
 			this.clearProgress();

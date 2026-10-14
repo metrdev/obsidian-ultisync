@@ -94,13 +94,19 @@ function trackBaseline(state: ReturnType<typeof makeState>, path: string, text: 
 	state.lastSyncedTree[path] = gitBlobSha(text);
 }
 
-function makeManager(vault: MockVault, state: ReturnType<typeof makeState>, github: object, store = { save: async () => undefined }) {
+function makeManager(
+	vault: MockVault,
+	state: ReturnType<typeof makeState>,
+	github: object,
+	store = { save: async () => undefined },
+	onStatus: (status: string) => void = () => undefined,
+) {
 	const manager = new SyncManager(
 		makeApp(vault),
 		settings(),
 		store,
 		state,
-		() => undefined,
+		onStatus,
 		() => undefined,
 	);
 	const runtime = manager as unknown as {
@@ -242,7 +248,7 @@ describe('conflict resolution safety', () => {
 		assert.equal(state.lastSyncedTree['other.md'], gitBlobSha('other local edit'));
 	});
 
-	it('keeps the conflict when the chosen local push fails', async () => {
+	it('keeps the conflict and reports the error when the chosen local push fails', async () => {
 		const vault = new MockVault(TFile);
 		vault.addFile('note.md', 'chosen local version');
 		const state = makeState();
@@ -266,12 +272,55 @@ describe('conflict resolution safety', () => {
 				throw new Error('temporary GitHub failure');
 			},
 		};
-		const manager = makeManager(vault, state, github);
+		const statuses: string[] = [];
+		const manager = makeManager(vault, state, github, undefined, (status) => statuses.push(status));
 
-		await assert.rejects(manager.keepLocal('note.md'), /temporary GitHub failure/);
+		// The conflict dialog awaits this call, so a failure has to be reported
+		// here rather than thrown into a click handler.
+		const logError = console.error;
+		console.error = () => undefined;
+		try {
+			await manager.keepLocal('note.md');
+		} finally {
+			console.error = logError;
+		}
 
 		assert.equal(state.conflicts['note.md'], conflict);
 		assert.equal(state.lastSyncedCommit, 'head-old');
+		assert.equal(statuses.at(-1), 'error');
+	});
+
+	it('announces an open conflict once, and again only when its remote version moves', async () => {
+		const vault = new MockVault(TFile);
+		vault.addFile('note.md', 'local edit');
+		const state = makeState();
+		trackBaseline(state, 'note.md', 'base');
+		const blobs = ['remote one', 'remote two'];
+		const github = {
+			getBlob: async (sha: string) => {
+				const text = blobs.find((value) => gitBlobSha(value) === sha)!;
+				return { content: Buffer.from(bytes(text)).toString('base64') };
+			},
+		};
+		const manager = makeManager(vault, state, github);
+		const internal = manager as unknown as {
+			recordCollisions: (paths: string[], remote: object) => Promise<void>;
+		};
+		const announced = () =>
+			manager.getActivity().filter((item: { kind: string }) => item.kind === 'conflict').length;
+
+		// Every push finds the same collision again until the user picks a side.
+		const first = snapshot(entry('note.md', 'remote one'));
+		await internal.recordCollisions(['note.md'], first);
+		await internal.recordCollisions(['note.md'], first);
+		await internal.recordCollisions(['note.md'], first);
+		assert.equal(announced(), 1);
+
+		await internal.recordCollisions(['note.md'], snapshot(entry('note.md', 'remote two')));
+		assert.equal(announced(), 2);
+		assert.equal(state.conflicts['note.md'].remoteSha, gitBlobSha('remote two'));
+		assert.equal(vault.getText(vault.getAbstractFileByPath('note (conflict - test-device).md') as any), 'remote one');
+		assert.equal(vault.getText(vault.getAbstractFileByPath('note (conflict - test-device - 1).md') as any), 'remote two');
 	});
 
 	it('keeps a newer remote version when the conflict changed after the user chose it', async () => {

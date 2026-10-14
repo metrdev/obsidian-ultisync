@@ -156,4 +156,43 @@ describe('SyncManager reconciliation tracking', () => {
 
 		manager.destroy();
 	});
+
+	it('rereads a file modified during a self-write grace period without treating our own write as an edit', async () => {
+		setWindowForSyncManager();
+		const vault = new MockVault(TFile);
+		const file = vault.addFile('note.md', 'pulled text');
+		const current = makeState(file, 'note.md', 'pulled text');
+		const manager = new SyncManager(
+			makeApp(vault),
+			settings(),
+			{ save: async () => undefined },
+			current,
+			() => undefined,
+			() => undefined,
+		);
+		const internal = manager as unknown as {
+			dirty: boolean;
+			lastDriftCheckAt: number;
+			detectLocalDriftIfDue: () => Promise<void>;
+			scheduleDebouncedPush: () => void;
+		};
+		internal.scheduleDebouncedPush = () => undefined;
+		internal.lastDriftCheckAt = Date.now();
+
+		// The modify event from the plugin's own write: same bytes as the record,
+		// so nothing is waiting to be pushed.
+		manager.markSelfWrite('note.md');
+		manager.recheckSoon('note.md');
+		await internal.detectLocalDriftIfDue();
+		assert.equal(internal.dirty, false);
+
+		// A user edit inside the same grace period, at an unchanged timestamp and
+		// size. The next poll reads the bytes and finds it.
+		vault.setTextAtSameStat(file, 'user edit');
+		manager.recheckSoon('note.md');
+		await internal.detectLocalDriftIfDue();
+		assert.equal(internal.dirty, true);
+
+		manager.destroy();
+	});
 });
