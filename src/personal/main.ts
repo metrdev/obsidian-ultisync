@@ -104,7 +104,7 @@ export default class PersonalVaultSync extends UltiSyncPlugin {
   const definitions = tab.getSettingDefinitions.bind(tab);
   tab.getSettingDefinitions = () => [
    {name:'Personal context',render:setting => {
-    setting.setDesc('Only GPT/ ↔ personal-notes. State is local to this device; credentials require secure storage.');
+    setting.setDesc('GPT/ plus exactly FamilyNotes/recipes.md ↔ personal-notes. State is local to this device; credentials require secure storage.');
    }},
    ...definitions(),
    {name:'Desktop backup',render:setting => this.backupSettings(setting.settingEl)},

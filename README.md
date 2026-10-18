@@ -3,13 +3,13 @@
 Private derivative of [UltiSync 1.0.7](https://github.com/msachet5/obsidian-ultisync). Original copyright and MIT license are retained.
 
 One Obsidian plugin with two independent jobs:
-- **Personal context**: only `GPT/` is mapped to the root of a selected GitHub repository. Works on desktop and iOS through GitHub's REST API.
+- **Personal context**: `GPT/` is mapped to the repository root, with the single fixed exception `FamilyNotes/recipes.md` ↔ `recipes.md`. The local `GPT/recipes.md` navigation pointer is excluded. Works on desktop and iOS through GitHub's REST API.
 - **Vault backup**: desktop only, once per local calendar day while Obsidian is open, using the vault's existing native Git repository. Disabled by default.
 
 ## Install
 
 Requires Obsidian 1.13.0 or newer. Build with Node.js 24 and `npm ci`, `npm run build`.
-Install through BRAT: add `metrdev/obsidian-ultisync`, use a separate fine-grained token restricted to that code repository with Contents read-only, and select release `1.1.0` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
+Install through BRAT: add `metrdev/obsidian-ultisync`, use a separate fine-grained token restricted to that code repository with Contents read-only, and select release `1.1.1` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
 
 Manual development installation: copy `main.js`, `manifest.json` and `styles.css` into `<VAULT>/.obsidian/plugins/personal-vault-sync/`.
 
@@ -23,8 +23,8 @@ On iPhone, add the private repository through BRAT as well and confirm the selec
 3. Check owner, repository and branch, then Save. On first use, review the comparison and select the intended starting point.
 4. Confirm the app has downloaded the expected files before editing offline.
 
-The engine sees a virtual vault rooted at GPT. Files outside it are not enumerated or forwarded to I/O methods. Hidden, absolute and traversal paths are rejected.
-Desktop scans fail closed on symlinks/junctions. iOS uses Obsidian's indexed file API; real-device acceptance remains required.
+The engine sees GPT files plus exactly `FamilyNotes/recipes.md`, exposed as `recipes.md`. All other FamilyNotes files are excluded. The shared recipe has a fixed path: plugin renames to or from it are rejected. Keep both GPT and FamilyNotes folders available before linking. Hidden, absolute and traversal paths are rejected.
+Desktop scans fail closed on symlinks/junctions in GPT or in the shared recipe path. They do not scan other FamilyNotes files. iOS uses Obsidian's indexed file API; real-device acceptance remains required.
 
 Updates are checked at startup, on returning to the app, and every 30 seconds while visible. Local edits are sent after a five-second quiet period.
 There is no continuous execution after iOS suspends Obsidian.

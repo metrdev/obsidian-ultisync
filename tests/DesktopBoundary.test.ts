@@ -25,3 +25,18 @@ it('does not treat an unavailable GPT folder as an empty safe scan',async()=>{
  const guard=await desktopBoundary(join(temp,'missing'));
  assert.throws(()=>guard());
 });
+
+it('permits only the exact shared recipe and ignores unsafe private family neighbours',async()=>{
+ const vault=join(temp,'shared-vault'),outside=join(temp,'shared-outside');
+ await mkdir(join(vault,'GPT'),{recursive:true});await mkdir(join(vault,'FamilyNotes'));await mkdir(outside);
+ await writeFile(join(vault,'FamilyNotes','recipes.md'),'shared');
+ await symlink(outside,join(vault,'FamilyNotes','private-link'),process.platform==='win32'?'junction':'dir');
+ const guard=await desktopBoundary(vault);guard();guard('FamilyNotes/recipes.md');
+ assert.throws(()=>guard('FamilyNotes/private-link/secret.md'),/Outside/);
+});
+it('refuses a junction in the shared recipe parent',async()=>{
+ const vault=join(temp,'family-junction-vault'),outside=join(temp,'family-outside');
+ await mkdir(join(vault,'GPT'),{recursive:true});await mkdir(outside);await writeFile(join(outside,'recipes.md'),'outside');
+ await symlink(outside,join(vault,'FamilyNotes'),process.platform==='win32'?'junction':'dir');
+ const guard=await desktopBoundary(vault);assert.throws(()=>guard(),/Symbolic links/);assert.throws(()=>guard('FamilyNotes/recipes.md'),/Symbolic links/);
+});

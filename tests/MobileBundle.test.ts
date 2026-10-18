@@ -6,7 +6,7 @@ import {indexedDB} from 'fake-indexeddb';
 async function mobile() {
  const code=await readFile('main.js','utf8');
  class Stub {
-  app:unknown; manifest={id:'personal-vault-sync',version:'1.1.0'};
+  app:unknown; manifest={id:'personal-vault-sync',version:'1.1.1'};
   constructor(app:unknown){this.app=app;}
   getSettingDefinitions(){return [];}
   addSettingTab(){}
