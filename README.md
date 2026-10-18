@@ -9,10 +9,12 @@ One Obsidian plugin with two independent jobs:
 ## Install
 
 Requires Obsidian 1.13.0 or newer. Build with Node.js 24 and `npm ci`, `npm run build`.
-Copy `main.js`, `manifest.json` and `styles.css` into `<VAULT>/.obsidian/plugins/personal-vault-sync/`.
+Install through BRAT: add `metrdev/obsidian-ultisync`, use a separate fine-grained token restricted to that code repository with Contents read-only, and select release `1.1.0` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
+
+Manual development installation: copy `main.js`, `manifest.json` and `styles.css` into `<VAULT>/.obsidian/plugins/personal-vault-sync/`.
 
 Start with a disposable vault and repository. Enable the plugin in Settings → Community plugins.
-On iPhone the three files can be copied into the iCloud vault on the computer; wait for their delivery before enabling the plugin on the phone. A saved folder is not proof that iCloud delivered it.
+On iPhone, add the private repository through BRAT as well and confirm the selected release was downloaded. A copied folder is not proof that BRAT tracks the repository or can access updates.
 
 ## Personal context
 
