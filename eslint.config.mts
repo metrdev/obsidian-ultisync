@@ -13,6 +13,7 @@ const acronyms = [...DEFAULT_ACRONYMS, 'PAT'];
 export default defineConfig(
 	globalIgnores([
 		'node_modules',
+		'dist',
 		'scripts',
 		'tests',
 		'esbuild.config.mjs',

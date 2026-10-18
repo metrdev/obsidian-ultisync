@@ -12,7 +12,7 @@ import {
 } from '../types';
 import { ULTISYNC_ICON } from './icons';
 
-export const SYNC_PANEL_VIEW_TYPE = 'ultisync-panel';
+export const SYNC_PANEL_VIEW_TYPE = 'personal-vault-sync-panel';
 
 /** What the panel needs from the plugin. */
 export interface PanelHost {

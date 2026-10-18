@@ -1,4 +1,4 @@
-export const PULL_INTERVAL_MS = 5000;
+export const PULL_INTERVAL_MS = 30000;
 export const POLL_HOLD_AFTER_PUSH_MS = 10000;
 export const PUSH_DELAY_SECONDS = 5;
 export const ACTIVITY_LIMIT = 30;

@@ -113,7 +113,7 @@ const PAT_STEPS = [
 	'Paste it into the field above and click Save.',
 ];
 
-const REPO_URL = 'https://github.com/msachet5/obsidian-ultisync';
+const REPO_URL = 'https://github.com/metrdev/obsidian-ultisync';
 
 export class SettingsTab extends PluginSettingTab {
 	private draft: CredentialDraft;

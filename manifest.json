@@ -1,10 +1,10 @@
 {
-	"id": "ultisync",
-	"name": "UltiSync",
-	"version": "1.0.7",
-	"minAppVersion": "1.13.0",
-	"description": "Synchronize selected vault files with a GitHub repository using the GitHub REST API. Works on desktop and mobile.",
-	"author": "Sachet Mulimani",
-	"authorUrl": "https://github.com/msachet5",
-	"isDesktopOnly": false
+  "id": "personal-vault-sync",
+  "name": "Personal Vault Sync",
+  "version": "1.1.0",
+  "minAppVersion": "1.13.0",
+  "description": "Selected GPT notes sync and desktop-only daily Git backup.",
+  "author": "metrdev; based on UltiSync by Sachet Sangamesh Mulimani",
+  "authorUrl": "https://github.com/msachet5",
+  "isDesktopOnly": false
 }
