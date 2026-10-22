@@ -1,6 +1,6 @@
 # Personal Vault Sync
 
-Private derivative of [UltiSync 1.0.7](https://github.com/msachet5/obsidian-ultisync). Original copyright and MIT license are retained.
+Independent derivative of [UltiSync 1.0.7](https://github.com/msachet5/obsidian-ultisync). Original copyright and MIT license are retained.
 
 One Obsidian plugin with two independent jobs:
 - **Personal context**: `GPT/` is mapped to the repository root, with the single fixed exception `FamilyNotes/recipes.md` ↔ `recipes.md`. The local `GPT/recipes.md` navigation pointer is excluded. Works on desktop and iOS through GitHub's REST API.
@@ -9,12 +9,12 @@ One Obsidian plugin with two independent jobs:
 ## Install
 
 Requires Obsidian 1.13.0 or newer. Build with Node.js 24 and `npm ci`, `npm run build`.
-Install through BRAT: add `metrdev/obsidian-ultisync`, use a separate fine-grained token restricted to that code repository with Contents read-only, and select release `1.1.1` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
+Install through BRAT: add `metrdev/obsidian-ultisync`, the code repository is public and needs no repository-access token; select release `1.1.2` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
 
 Manual development installation: copy `main.js`, `manifest.json` and `styles.css` into `<VAULT>/.obsidian/plugins/personal-vault-sync/`.
 
 Start with a disposable vault and repository. Enable the plugin in Settings → Community plugins.
-On iPhone, add the private repository through BRAT as well and confirm the selected release was downloaded. A copied folder is not proof that BRAT tracks the repository or can access updates.
+On iPhone, add the repository through BRAT as well and confirm the selected release was downloaded. A copied folder is not proof that BRAT tracks the repository or can access updates.
 
 ## Personal context
 
@@ -66,4 +66,4 @@ The tests do not establish real iPhone execution, visual settings behavior, or c
 ## Repository boundaries
 
 Personal notes, credentials, vault backups and local migration artifacts are never committed to this code repository.
-`upstream` is the original project; `origin` is the private derivative. Updating upstream is a reviewed code change, not an automatic runtime action.
+`upstream` is the original project; `origin` is the independent derivative. Updating upstream is a reviewed code change, not an automatic runtime action.

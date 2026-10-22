@@ -1,20 +1,20 @@
 # Установка и завершение перехода
 
-Personal Vault Sync — наша приватная сборка на основе UltiSync. Сборка 1.1.1 подготовлена для проверки. Автоматические тесты и тестовый GitHub-обмен не подтверждают работу на настоящем iPhone.
+Personal Vault Sync — наша сборка на основе UltiSync. Сборка 1.1.2 подготовлена для проверки. Автоматические тесты и тестовый GitHub-обмен не подтверждают работу на настоящем iPhone.
 
 ## Установка через BRAT на каждом устройстве
 
 1. Проверить Obsidian: нужна версия не ниже 1.13.0. Установить и включить BRAT через **Settings → Community plugins**, если он ещё не установлен.
-2. Создать fine-grained GitHub token только для **metrdev/obsidian-ultisync**, **Contents: Read-only**. Это токен загрузки и обновления плагина. Не использовать здесь токен личных заметок или доступ к полному бэкапу.
-3. Открыть **BRAT → Add beta plugin** (или команду **BRAT: Plugins: Add a beta plugin for testing (with or without version)**). Ввести **metrdev/obsidian-ultisync**. В поле токена/секрета указать созданный токен через SecretStorage. Получить список версий и выбрать **1.1.1** для приёмки; добавить плагин. Названия отдельных элементов могут зависеть от языка BRAT.
+2. Репозиторий **metrdev/obsidian-ultisync** публичный: токен доступа к репозиторию для загрузки плагина не требуется. Токен личных заметок вводится в самом Personal Vault Sync.
+3. Открыть **BRAT → Add beta plugin** (или команду **BRAT: Plugins: Add a beta plugin for testing (with or without version)**). Ввести **metrdev/obsidian-ultisync**. Получить список версий и выбрать **1.1.2** для приёмки; добавить плагин. Названия отдельных элементов могут зависеть от языка BRAT.
 4. Открыть **Settings → Community plugins** и включить **Personal Vault Sync**, если BRAT не включил его при установке. Существующая папка, ранее скопированная вручную, не доказывает, что BRAT отслеживает репозиторий: проверить запись **metrdev/obsidian-ultisync** в списке BRAT.
-5. Повторить добавление на iPhone. Наличие записи и файлов на ПК не подтверждает доступ BRAT к приватному релизу с телефона. Токен в чат не присылать.
+5. Повторить добавление на iPhone. Наличие записи и файлов на ПК не подтверждает загрузку релиза через BRAT с телефона. Токен в чат не присылать.
 
 BRAT умеет устанавливать приватные релизы и закреплять конкретную версию. Источники: [private repositories](https://tfthacker.com/brat-private-repo), [developer guide](https://github.com/TfTHacker/obsidian42-brat/blob/main/BRAT-DEVELOPER-GUIDE.md).
 
 ## Настройка обмена заметками
 
-1. Создать **другой** fine-grained GitHub token: только **metrdev/personal-notes**, **Contents: Read and write**. Ввести его непосредственно в Personal Vault Sync на каждом устройстве. Настольный Git использует отдельные существующие учётные данные.
+1. Создать fine-grained GitHub token: только **metrdev/personal-notes**, **Contents: Read and write**. В **Settings → Personal Vault Sync → Personal access token** выбрать новый токен, вставить его и нажать **Save** в строке **Save credentials** на каждом устройстве. Настольный Git использует отдельные существующие учётные данные.
 2. Проверить owner **metrdev**, repository **personal-notes**, branch **main**, нажать **Save**. При первом сравнении просмотреть список: не выбирать очистку или перезапись при неожиданном различии.
 3. Проверить время последнего успешного pull/push и отсутствие ошибок. Если SecretStorage или IndexedDB недоступны, обмен останется выключенным.
 

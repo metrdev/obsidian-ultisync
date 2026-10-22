@@ -1,7 +1,7 @@
 {
   "id": "personal-vault-sync",
   "name": "Personal Vault Sync",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "minAppVersion": "1.13.0",
   "description": "Selected GPT notes sync and desktop-only daily Git backup.",
   "author": "metrdev; based on UltiSync by Sachet Sangamesh Mulimani",

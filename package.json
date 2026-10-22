@@ -1,6 +1,6 @@
 {
   "name": "personal-vault-sync",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "description": "GPT-only GitHub exchange and desktop daily vault backup.",
   "main": "main.js",
   "type": "module",

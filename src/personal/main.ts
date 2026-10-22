@@ -65,9 +65,8 @@ export default class PersonalVaultSync extends UltiSyncPlugin {
    this.app = this.realApp;
    const message = error instanceof Error ? error.message : 'Local storage unavailable.';
    new Notice('Personal Vault Sync: '+message,12000);
-   const renderBackup = (element: HTMLElement) => this.backupSettings(element);
    this.addSettingTab(new class extends PluginSettingTab {
-    getSettingDefinitions() { return [{name:'Context unavailable',render:(setting: Setting) => {setting.setDesc(message); renderBackup(setting.settingEl);}}]; }
+    getSettingDefinitions() { return [{name:'Context unavailable',render:(setting: Setting) => {setting.setDesc(message);}}]; }
    }(this.realApp,this));
   }
   this.addCommand({id:'backup-now',name:'Back up vault now (desktop)',callback:() => {void this.runBackup(true);}});

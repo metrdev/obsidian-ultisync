@@ -16,6 +16,8 @@ const context = await esbuild.context({
 	bundle: true,
 	external: ['obsidian', 'electron', 'node:*', ...builtinModules],
 	format: 'cjs',
+	// Obsidian loads this bundle through CommonJS; Chromium cannot resolve node: URLs.
+	supported: { 'dynamic-import': false },
 	target: 'es2021',
 	logLevel: 'info',
 	sourcemap: prod ? false : 'inline',
