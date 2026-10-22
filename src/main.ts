@@ -438,6 +438,8 @@ export default class UltiSyncPlugin extends Plugin {
 		await this.syncManager.pushEverything();
 	}
 
+	protected setupLocalPath(path: string): string { return path; }
+
 	private repositoryLabel(): string {
 		const { githubOwner, githubRepo } = this.settings;
 		return githubOwner && githubRepo ? `${githubOwner.trim()}/${githubRepo.trim()}` : '';
@@ -529,15 +531,18 @@ export default class UltiSyncPlugin extends Plugin {
 
 		const modal: SetupModalOptions = options.enableSync
 			? {
-					primaryLabel: 'Start syncing',
+					primaryLabel: 'Включить обмен',
 					cancelNote:
-						'Cancelling leaves synchronization switched off. Turning Sync back on runs this check again.',
+						'Отмена не меняет файлы и оставляет обмен выключенным. Повторное включение снова запустит сравнение.',
 				}
 			: {
-					primaryLabel: 'Push',
+					primaryLabel: 'Отправить изменения',
 					cancelNote:
-						'Cancelling changes nothing. Sync stays off either way; this only links the vault and pushes it.',
+						'Отмена ничего не меняет. Это ручная отправка; автоматический обмен останется выключенным.',
 				};
+
+		modal.repositoryLabel = this.repositoryLabel();
+		modal.localPath = path => this.setupLocalPath(path);
 
 		const outcome = await new Promise<SetupOutcome>((resolve) => {
 			new SetupCheckModal(this.app, result, modal, resolve).open();

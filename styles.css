@@ -600,43 +600,39 @@
   max-width: min(640px, 92vw);
 }
 
-.ultisync-choice {
-  margin: 0 0 1em;
-  padding: 0.7em 0.9em;
-  border: 1px solid var(--background-modifier-border);
-  border-radius: var(--radius-m);
-  background: var(--background-secondary);
+/* Native Setting controls keep the setup usable even before plugin CSS reloads. */
+.ultisync-setup-modal .ultisync-file-list {
+  margin-block: var(--size-4-3);
 }
-
-.ultisync-choice-title {
-  font-weight: var(--font-medium);
-  margin-bottom: 0.4em;
+.ultisync-setup-modal .ultisync-file-list li {
+  overflow-wrap: anywhere;
+  margin-block: var(--size-2-2);
 }
-
-.ultisync-radio {
-  display: flex;
+.ultisync-setup-modal .setting-item {
   align-items: flex-start;
-  gap: 0.7em;
-  padding: 0.35em 0.2em;
-  cursor: pointer;
-  border-radius: var(--radius-s);
+  gap: var(--size-4-3);
 }
-
-.ultisync-radio:hover {
-  background: var(--background-modifier-hover);
+.ultisync-setup-modal .setting-item-control {
+  min-width: 0;
 }
-
-.ultisync-radio input {
-  margin-top: 0.25em;
-  flex: none;
+.ultisync-setup-modal select {
+  max-width: 100%;
 }
-
-.ultisync-radio-label {
-  color: var(--text-normal);
-}
-
-.ultisync-radio-hint {
+.ultisync-setup-decision,
+.ultisync-setup-repository {
   color: var(--text-muted);
-  font-size: var(--font-ui-smaller);
-  line-height: 1.4;
+  line-height: 1.5;
+}
+@media (max-width: 600px) {
+  .ultisync-setup-modal .setting-item {
+    flex-direction: column;
+    align-items: stretch;
+  }
+  .ultisync-setup-modal .setting-item-control {
+    justify-content: flex-start;
+  }
+  .ultisync-setup-modal .ultisync-setup-actions .setting-item-control {
+    justify-content: flex-end;
+    flex-wrap: wrap;
+  }
 }

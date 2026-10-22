@@ -7,6 +7,7 @@ export interface ConfirmOptions {
 	/** Paths or names the question is about, rendered as a list under the body. */
 	list?: string[];
 	confirmLabel: string;
+	cancelLabel?: string;
 	/** Styles the confirm button as destructive. On by default, because every
 	 *  question this modal asks is about losing something. */
 	destructive?: boolean;
@@ -48,7 +49,7 @@ export class ConfirmModal extends Modal {
 				if (options.destructive ?? true) button.setDestructive();
 				else button.setCta();
 			})
-			.addButton((button) => button.setButtonText('Cancel').onClick(() => this.answer(false)));
+			.addButton((button) => button.setButtonText(options.cancelLabel ?? 'Cancel').onClick(() => this.answer(false)));
 	}
 
 	private renderList(paths: string[]): void {

@@ -12,7 +12,7 @@
 
 ## Real iPhone
 
-1. Confirm Obsidian is at least 1.13.0. Install through BRAT from metrdev/obsidian-ultisync (the code repository is public) and select release 1.1.2. Verify BRAT tracks that repository on the phone.
+1. Confirm Obsidian is at least 1.13.0. Install through BRAT from metrdev/obsidian-ultisync (the code repository is public) and select release 1.1.3. Verify BRAT tracks that repository on the phone.
 2. Enable Personal Vault Sync and enter a separate write token restricted to personal-notes.
 3. Turn the PC off. Publish an agreed harmless change to one personal note from ChatGPT.
 4. Open Obsidian and verify the exact new content.

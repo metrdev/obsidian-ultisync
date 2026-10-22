@@ -9,7 +9,7 @@ One Obsidian plugin with two independent jobs:
 ## Install
 
 Requires Obsidian 1.13.0 or newer. Build with Node.js 24 and `npm ci`, `npm run build`.
-Install through BRAT: add `metrdev/obsidian-ultisync`, the code repository is public and needs no repository-access token; select release `1.1.2` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
+Install through BRAT: add `metrdev/obsidian-ultisync`, the code repository is public and needs no repository-access token; select release `1.1.3` for acceptance. The notes-exchange token is separate and has Contents read/write only on `personal-notes`. See [INSTALL_RU.md](INSTALL_RU.md).
 
 Manual development installation: copy `main.js`, `manifest.json` and `styles.css` into `<VAULT>/.obsidian/plugins/personal-vault-sync/`.
 

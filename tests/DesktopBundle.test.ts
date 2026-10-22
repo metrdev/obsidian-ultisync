@@ -8,7 +8,7 @@ const nativeRequire=createRequire(import.meta.url);
 async function runtime(desktop=true){
  const code=await readFile('main.js','utf8'),loaded=[],dynamic=[],notices=[],gitCalls=[];
  class Stub{
-  app;manifest={id:'personal-vault-sync',version:'1.1.2'};tabs=[];
+  app;manifest={id:'personal-vault-sync',version:'1.1.3'};tabs=[];
   constructor(app){this.app=app;}
   getSettingDefinitions(){return [];}
   addSettingTab(tab){this.tabs.push(tab);}

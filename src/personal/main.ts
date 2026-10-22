@@ -2,7 +2,7 @@ import { App, Notice, Platform, PluginSettingTab, Setting } from 'obsidian';
 import UltiSyncPlugin from '../main';
 import { DEFAULT_SETTINGS, DEFAULT_STATE, PersistedData } from '../types';
 import { DeviceStore } from './DeviceStore';
-import { scopedApp, ScopeGuard } from './ScopedVault';
+import { scopedApp, ScopeGuard, localPath } from './ScopedVault';
 
 interface BackupPreferences { enabled: boolean; lastSuccess: string | null; }
 function vaultKey(app: App): string {
@@ -44,6 +44,8 @@ export default class PersonalVaultSync extends UltiSyncPlugin {
  private lastBackupAttempt = 0;
  private contextReady = false;
  private persistence: Promise<void> = Promise.resolve();
+
+ protected setupLocalPath(path: string): string { return localPath(path); }
 
  async onload(): Promise<void> {
   this.realApp = this.app;
@@ -103,7 +105,7 @@ export default class PersonalVaultSync extends UltiSyncPlugin {
   const definitions = tab.getSettingDefinitions.bind(tab);
   tab.getSettingDefinitions = () => [
    {name:'Personal context',render:setting => {
-    setting.setDesc('GPT/ plus exactly FamilyNotes/recipes.md ↔ personal-notes. State is local to this device; credentials require secure storage.');
+    setting.setDesc('GPT/ и только FamilyNotes/recipes.md ↔ personal-notes. PAT ниже нужен только для этого обмена. Полный бэкап использует отдельные учётные данные системного Git.');
    }},
    ...definitions(),
    {name:'Desktop backup',render:setting => this.backupSettings(setting.settingEl)},
@@ -115,7 +117,7 @@ export default class PersonalVaultSync extends UltiSyncPlugin {
   panel.setAttribute('data-personal-backup','true');
   new Setting(panel).setName('Vault backup').setHeading();
   panel.createEl('p',{text:Platform.isDesktopApp ?
-   'Full backup via the existing Git repository. Once daily while Obsidian is open. Restore is manual.' :
+   'Полный бэкап → metrdev/ObsidianGeneralNotes. Используется установленный Git и его SSH/учётные данные, а не PAT из раздела обмена заметками. Раз в сутки при открытом Obsidian; восстановление вручную.' :
    'Full backup is disabled on mobile. GPT synchronization works independently.'});
   if (!Platform.isDesktopApp) return;
   new Setting(panel).setName('Daily backup on this computer').setDesc('Enabled separately on each desktop. Default: off.')
